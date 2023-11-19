@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.1.5"
     id("io.spring.dependency-management") version "1.1.3"
+    id("com.google.cloud.tools.jib") version "3.4.0"
 }
 
 group = "com.yellowsunn"
@@ -35,4 +36,17 @@ tasks.withType<Test> {
 
 tasks.bootBuildImage {
     builder.set("paketobuildpacks/builder-jammy-base:latest")
+}
+
+jib {
+    setAllowInsecureRegistries(true)
+    from {
+        image = "harbor.yellowsunn.com:80/archive/eclipse-temurin:17-jre-alpine"
+    }
+    to {
+        tags = setOf("latest")
+    }
+    container {
+        ports = listOf("8080")
+    }
 }
