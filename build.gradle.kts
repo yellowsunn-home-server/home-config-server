@@ -21,6 +21,9 @@ extra["springCloudVersion"] = "2022.0.4"
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.cloud:spring-cloud-config-server")
+
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
