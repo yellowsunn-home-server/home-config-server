@@ -55,6 +55,11 @@ jobs:
               "deployment-version": "${{ env.deployment-version }}",
               "overlay-path": "home-config-server/prod"
             }
+
+      - name: Sleep for 10 seconds
+        run: sleep 10s
+        shell: bash
+
         # 개발 환경 배포
       - name: Build and Deploy api server image (DEV) 🚀
         uses: gradle/gradle-build-action@v2
