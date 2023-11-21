@@ -56,8 +56,8 @@ jobs:
               "overlay-path": "home-config-server/prod"
             }
 
-      - name: Sleep for 10 seconds
-        run: sleep 10s
+      - name: Sleep for 30 seconds
+        run: sleep 30s
         shell: bash
 
         # 개발 환경 배포
