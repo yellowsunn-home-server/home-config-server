@@ -23,7 +23,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-config-server")
 
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
@@ -44,7 +44,7 @@ tasks.bootBuildImage {
 jib {
     setAllowInsecureRegistries(true)
     from {
-        image = "harbor.yellowsunn.com:80/archive/eclipse-temurin:17-jre-alpine"
+        image = "harbor.yellowsunn.com:80/archive/eclipse-temurin:17-jre-alpine-pinpoint-2.5.2"
     }
     to {
         tags = setOf("latest")
