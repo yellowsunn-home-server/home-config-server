@@ -1,4 +1,4 @@
-name: 수동 컨테이너 배포 및 태그 업데이트
+name: 수동 컨테이너 배포
 on:
   workflow_dispatch:
     inputs:
@@ -11,7 +11,7 @@ on:
           - prod
 jobs:
   build-deploy:
-    name: 수동 컨테이너 배포 트리거
+    name: 수동 컨테이너 배포 작업 (${{ inputs.profile }})
     runs-on: self-hosted
     steps:
       - name: Checkout
@@ -27,3 +27,36 @@ jobs:
         with:
           format: yyyyMMDDHHmmss
           utcOffset: "+09:00"
+      - name: Get deploy version
+        run: echo "deployment-version=${{ steps.current-time.outputs.formattedTime }}" >> $GITHUB_ENV
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build and Deploy api server image 🚀
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          cache-read-only: true
+          arguments: |
+            jib
+            -DsendCredentialsOverHttp=true
+            -Djib.container.jvmFlags=-Dspring.profiles.active=${{ inputs.profile }},-Dspring.cloud.config.server.git.password=${{ secrets.GIT_HUB_PERSONAL_ACCESS_TOKEN }}
+            -Djib.from.auth.username=${{ secrets.HARBOR_USERNAME }}
+            -Djib.from.auth.password=${{ secrets.HARBOR_PASSWORD }}
+            -Djib.to.image=harbor.yellowsunn.com:80/${{ inputs.profile }}/home-config-server
+            -Djib.to.tags=${{ env.deployment-version }},latest
+            -Djib.to.auth.username=${{ secrets.HARBOR_USERNAME }}
+            -Djib.to.auth.password=${{ secrets.HARBOR_PASSWORD }}
+            --stacktrace
+      - name: Trigger Update Image tag
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GIT_HUB_PERSONAL_ACCESS_TOKEN }}
+          repository: yellowsunn-home-server/kubernetes-manifest
+          event-type: change-image-tag
+          client-payload: |-
+            {
+              "requested-event-path": "${{ env.GITHUB_EVENT_PATH }}",
+              "container-image": "harbor.yellowsunn.com:80/${{ inputs.profile }}/home-config-server",
+              "deployment-version": "${{ env.deployment-version }}",
+              "overlay-path": "home-config-server/${{ inputs.profile }}"
+            }
